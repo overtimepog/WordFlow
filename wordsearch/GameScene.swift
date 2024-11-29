@@ -156,29 +156,52 @@ class GameScene: SKScene {
     }
     
     private func placeWords() {
-        for word in words {
+        // Sort words by length (longest first) to ensure better placement
+        let sortedWords = words.sorted { $0.count > $1.count }
+        
+        for word in sortedWords {
             var placed = false
             var attempts = 0
+            let maxAttempts = 200  // Increased attempts for better placement chances
             
-            while !placed && attempts < 100 {
+            while !placed && attempts < maxAttempts {
                 let row = Int.random(in: 0..<gridHeight)
                 let col = Int.random(in: 0..<gridWidth)
                 
-                let directions = [(0,1), (1,0), (1,1), (-1,1)]
-                let direction = directions.randomElement()!
+                // All possible directions
+                let directions = [
+                    (0,1),   // right
+                    (1,0),   // down
+                    (1,1),   // diagonal down-right
+                    (-1,1),  // diagonal up-right
+                    (0,-1),  // left
+                    (-1,0),  // up
+                    (-1,-1), // diagonal up-left
+                    (1,-1)   // diagonal down-left
+                ]
                 
-                if canPlaceWord(word, at: (row, col), direction: direction) {
-                    placeWord(word, at: (row, col), direction: direction)
-                    placed = true
+                // Try each direction in random order
+                let shuffledDirections = directions.shuffled()
+                for direction in shuffledDirections {
+                    if canPlaceWord(word, at: (row, col), direction: direction) {
+                        placeWord(word, at: (row, col), direction: direction)
+                        placed = true
+                        break
+                    }
                 }
                 
                 attempts += 1
+            }
+            
+            if !placed {
+                print("Warning: Could not place word: \(word)")
             }
         }
     }
     
     private func canPlaceWord(_ word: String, at position: (row: Int, col: Int), direction: (dx: Int, dy: Int)) -> Bool {
         let length = word.count
+        let characters = Array(word)
         
         // Check each position the word would occupy
         for i in 0..<length {
@@ -190,33 +213,10 @@ class GameScene: SKScene {
                 return false
             }
             
-            // Check if cell is empty - no overlaps allowed at all
-            if grid[newRow][newCol] != " " {
+            // Allow overlap only if the letters match
+            let currentCell = grid[newRow][newCol]
+            if currentCell != " " && currentCell != characters[i] {
                 return false
-            }
-            
-            // Check adjacent cells (to prevent words from being too close)
-            for dr in -1...1 {
-                for dc in -1...1 {
-                    let checkRow = newRow + dr
-                    let checkCol = newCol + dc
-                    
-                    // Skip the cells that are part of the word we're trying to place
-                    if dr == direction.dy && dc == direction.dx {
-                        continue
-                    }
-                    if dr == -direction.dy && dc == -direction.dx {
-                        continue
-                    }
-                    
-                    // Check if adjacent cell is within bounds
-                    if checkRow >= 0 && checkRow < gridHeight && checkCol >= 0 && checkCol < gridWidth {
-                        // If adjacent cell has any letter, prevent placement
-                        if grid[checkRow][checkCol] != " " {
-                            return false
-                        }
-                    }
-                }
             }
         }
         

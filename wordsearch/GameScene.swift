@@ -330,14 +330,13 @@ class GameScene: SKScene {
             highlight.fillColor = .blue
             highlight.alpha = 0.3
             
-            let gridWidth = CGFloat(self.gridWidth) * cellSize
-            let gridHeight = CGFloat(self.gridHeight) * cellSize
-            let startX = -gridWidth / 2
-            let startY = -gridHeight / 2
+            // Calculate grid position
+            let startX = -CGFloat(gridWidth) * cellSize / 2
+            let startY = -CGFloat(gridHeight) * cellSize / 2
             
             highlight.position = CGPoint(
-                x: startX + CGFloat(col) * cellSize + cellSize/2,
-                y: startY + CGFloat(row) * cellSize + cellSize/2
+                x: startX + CGFloat(col) * cellSize + cellSize / 2,
+                y: startY + CGFloat(row) * cellSize + cellSize / 2
             )
             
             gridNode?.addChild(highlight)

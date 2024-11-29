@@ -68,6 +68,9 @@ class GameScene: SKScene {
         letters = Array(repeating: Array(repeating: SKLabelNode(), count: gridWidth), count: gridHeight)
         grid = Array(repeating: Array(repeating: " ", count: gridWidth), count: gridHeight)
         
+        // Clear found words when setting up new grid
+        foundWords.removeAll()
+        
         let gridWidth = CGFloat(self.gridWidth) * cellSize
         let gridHeight = CGFloat(self.gridHeight) * cellSize
         
@@ -252,11 +255,8 @@ class GameScene: SKScene {
         selectedLetters.removeAll()
         
         if let (row, col) = convertPointToGrid(location) {
-            // More thorough check for found words
-            let isPartOfFoundWord = foundWords.contains { word in
-                let wordPositions = getPositionsForWord(word)
-                return wordPositions.contains { $0 == (row, col) }
-            }
+            // Check if this position is part of any found word
+            let isPartOfFoundWord = isPositionPartOfFoundWord(row: row, col: col)
             
             // Only allow selection if the letter is not part of ANY found word
             if !isPartOfFoundWord {
@@ -266,12 +266,22 @@ class GameScene: SKScene {
         }
     }
     
+    private func isPositionPartOfFoundWord(row: Int, col: Int) -> Bool {
+        return foundWords.contains { word in
+            let wordPositions = getPositionsForWord(word)
+            return wordPositions.contains { $0 == (row, col) }
+        }
+    }
+    
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
+        guard let touch = touches.first,
+              !selectedLetters.isEmpty else { return }
+        
         let location = touch.location(in: gridNode ?? self)
         
         if let (row, col) = convertPointToGrid(location),
-           let (startRow, startCol) = selectedLetters.first {
+           let (startRow, startCol) = selectedLetters.first,
+           !isPositionPartOfFoundWord(row: row, col: col) {
             // Calculate direction
             let rowDiff = row - startRow
             let colDiff = col - startCol

@@ -257,6 +257,10 @@ class GameScene: SKScene {
                                 letters[r][c].fontColor = .white
                                 letters[r][c].setScale(1.0)
                             }
+                        } else {
+                            // Keep found words gray
+                            letters[r][c].fontColor = .gray
+                            letters[r][c].setScale(1.0)
                         }
                     }
                 }

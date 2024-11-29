@@ -267,6 +267,19 @@ class GameScene: SKScene {
     }
     
     private func isPositionPartOfFoundWord(row: Int, col: Int) -> Bool {
+        // Get all words (found and not found) that contain this position
+        let wordsContainingPosition = words.filter { word in
+            let wordPositions = getPositionsForWord(word)
+            return wordPositions.contains { $0 == (row, col) }
+        }
+        
+        // If this position is part of multiple words
+        if wordsContainingPosition.count > 1 {
+            // Allow interaction if at least one of the words is not found
+            return wordsContainingPosition.allSatisfy { foundWords.contains($0) }
+        }
+        
+        // For single-word positions, block if the word is found
         return foundWords.contains { word in
             let wordPositions = getPositionsForWord(word)
             return wordPositions.contains { $0 == (row, col) }

@@ -18,7 +18,17 @@ class GameScene: SKScene {
     //private let gridOffset = CGPoint(x: -350, y: -550)
     
     private var letters: [[SKLabelNode]] = []
-    private let words = ["SWIFT", "SPRITE", "GAME", "FUN", "CODE", "GAY"]
+    private let wordList = [
+        "SWIFT", "CODE", "GAME", "FUN", "APP", "RUN",
+        "PLAY", "WIN", "LOOP", "DATA", "TEST", "BUG",
+        "BYTE", "FILE", "SORT", "LIST", "MAP", "SET",
+        "VIEW", "DRAW", "TAP", "DRAG", "DROP", "SYNC",
+        "LOAD", "SAVE", "EDIT", "UNDO", "COPY", "LINK",
+        "NODE", "PATH", "GRID", "CELL", "FONT", "TEXT",
+        "LINE", "RECT", "SIZE", "MOVE", "FADE", "SPIN",
+        "ZOOM", "CLIP", "MASK", "BLUR", "FILL", "TIME"
+    ]
+    private var words: [String] = []
     private var grid: [[Character]] = []
     
     private var selectedLetters: [(row: Int, col: Int)] = []
@@ -30,9 +40,26 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        
+        // Initialize words here
+        words = selectedWords
+        
         Task {
             setupGrid()
         }
+    }
+    
+    private var selectedWords: [String] {
+        let maxLength = max(gridWidth, gridHeight)
+        let validWords = wordList.filter { $0.count <= maxLength }
+        
+        var words: Set<String> = []
+        while words.count < 6 && !validWords.isEmpty {
+            if let word = validWords.randomElement() {
+                words.insert(word)
+            }
+        }
+        return Array(words)
     }
     
     private func setupGrid() {
@@ -246,10 +273,10 @@ class GameScene: SKScene {
                 // Reset all letters to default state first, except the first selected letter
                 for r in 0..<gridHeight {
                     for c in 0..<gridWidth {
-                        if !foundWords.contains { word in
+                        if !foundWords.contains(where: { word in
                             let wordPositions = getPositionsForWord(word)
                             return wordPositions.contains { $0 == (r, c) }
-                        } {
+                        }) {
                             // Don't reset the first selected letter
                             if !(r == selectedLetters[0].row && c == selectedLetters[0].col) {
                                 letters[r][c].fontColor = .white

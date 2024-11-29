@@ -243,15 +243,18 @@ class GameScene: SKScene {
                     }
                 }
                 
-                // Reset all letters to default state first
+                // Reset all letters to default state first, except the first selected letter
                 for r in 0..<gridHeight {
                     for c in 0..<gridWidth {
                         if !foundWords.contains { word in
                             let wordPositions = getPositionsForWord(word)
                             return wordPositions.contains { $0 == (r, c) }
                         } {
-                            letters[r][c].fontColor = .white
-                            letters[r][c].setScale(1.0)
+                            // Don't reset the first selected letter
+                            if !(r == selectedLetters[0].row && c == selectedLetters[0].col) {
+                                letters[r][c].fontColor = .white
+                                letters[r][c].setScale(1.0)
+                            }
                         }
                     }
                 }

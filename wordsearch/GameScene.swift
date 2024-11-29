@@ -247,28 +247,15 @@ class GameScene: SKScene {
                     }
                 }
                 
-                // Reset letter appearances
+                // Reset all letters to default state first
                 for r in 0..<gridHeight {
                     for c in 0..<gridWidth {
-                        // First check if it's part of any found word
-                        let isPartOfFoundWord = foundWords.contains { word in
+                        if !foundWords.contains { word in
                             let wordPositions = getPositionsForWord(word)
                             return wordPositions.contains { $0 == (r, c) }
-                        }
-                        
-                        if isPartOfFoundWord {
-                            // Always keep found word letters gray
-                            letters[r][c].fontColor = .gray
+                        } {
+                            letters[r][c].fontColor = .white
                             letters[r][c].setScale(1.0)
-                        } else {
-                            // Handle non-found word letters
-                            if selectedLetters.contains(where: { $0 == (r, c) }) {
-                                letters[r][c].fontColor = .yellow
-                                letters[r][c].setScale(1.2)
-                            } else {
-                                letters[r][c].fontColor = .white
-                                letters[r][c].setScale(1.0)
-                            }
                         }
                     }
                 }
@@ -293,6 +280,8 @@ class GameScene: SKScene {
                                 if !selectedLetters.contains(where: { $0 == position }) {
                                     selectedLetters.append(position)
                                     highlightCell(at: newRow, newCol)
+                                    letters[newRow][newCol].fontColor = .yellow
+                                    letters[newRow][newCol].setScale(1.2)
                                 }
                             }
                         }

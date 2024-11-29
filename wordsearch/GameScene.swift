@@ -350,7 +350,10 @@ class GameScene: SKScene {
         grid.removeAll()
         letters.removeAll()
         
-        // Setup the grid again
+        // Select new words
+        words = selectedWords
+        
+        // Setup the grid again with new words
         setupGrid()
     }
     

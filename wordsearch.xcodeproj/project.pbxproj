@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		36FDE0572CF95BF400DB023A /* SwiftyRequest in Frameworks */ = {isa = PBXBuildFile; productRef = 36FDE0562CF95BF400DB023A /* SwiftyRequest */; };
+		36FDE0592CF95DD700DB023A /* SwiftyRequest in Frameworks */ = {isa = PBXBuildFile; productRef = 36FDE0582CF95DD700DB023A /* SwiftyRequest */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		36E556EE2CF7E0E600DABDAB /* wordsearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wordsearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36FDE0592CF95DD700DB023A /* SwiftyRequest in Frameworks */,
+				36FDE0572CF95BF400DB023A /* SwiftyRequest in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,8 +71,6 @@
 				36E556F02CF7E0E600DABDAB /* wordsearch */,
 			);
 			name = wordsearch;
-			packageProductDependencies = (
-			);
 			productName = wordsearch;
 			productReference = 36E556EE2CF7E0E600DABDAB /* wordsearch.app */;
 			productType = "com.apple.product-type.application";
@@ -94,6 +99,9 @@
 			);
 			mainGroup = 36E556E52CF7E0E600DABDAB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				36FDE0552CF95BF400DB023A /* XCRemoteSwiftPackageReference "SwiftyRequest" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 36E556EF2CF7E0E600DABDAB /* Products */;
 			projectDirPath = "";
@@ -322,6 +330,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		36FDE0552CF95BF400DB023A /* XCRemoteSwiftPackageReference "SwiftyRequest" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kitura/SwiftyRequest.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.2.200;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		36FDE0562CF95BF400DB023A /* SwiftyRequest */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36FDE0552CF95BF400DB023A /* XCRemoteSwiftPackageReference "SwiftyRequest" */;
+			productName = SwiftyRequest;
+		};
+		36FDE0582CF95DD700DB023A /* SwiftyRequest */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36FDE0552CF95BF400DB023A /* XCRemoteSwiftPackageReference "SwiftyRequest" */;
+			productName = SwiftyRequest;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 36E556E62CF7E0E600DABDAB /* Project object */;
 }

@@ -19,43 +19,6 @@ class GameScene: SKScene {
     
     private var letters: [[SKLabelNode]] = []
     private let words = ["SWIFT", "SPRITE", "GAME", "FUN", "CODE", "GAY"]
-
-    //make sure the words can fit on the grid
-    private func validateWords() -> Bool {
-        print("\n=== Starting Word Validation ===")
-        print("Grid size: \(gridWidth)x\(gridHeight)")
-        
-        // Check if any word is longer than the grid dimensions
-        let maxLength = max(gridWidth, gridHeight)
-        print("Maximum allowed word length: \(maxLength)")
-        
-        for word in words {
-            print("Validating word: '\(word)' (length: \(word.count))")
-            if word.count > maxLength {
-                print("❌ Warning: '\(word)' is too long for the grid (max length: \(maxLength))")
-                return false
-            }
-            print("✅ '\(word)' fits within grid dimensions")
-        }
-        
-        // Check total character count vs available spaces
-        let totalSpaces = gridWidth * gridHeight
-        let totalCharacters = words.reduce(0) { $0 + $1.count }
-        
-        print("\nChecking total space requirements:")
-        print("Total grid spaces: \(totalSpaces)")
-        print("Total characters needed: \(totalCharacters)")
-        
-        if totalCharacters > totalSpaces {
-            print("❌ Warning: Total characters (\(totalCharacters)) exceed grid spaces (\(totalSpaces))")
-            return false
-        }
-        
-        print("✅ All words validated successfully!")
-        print("=== Validation Complete ===\n")
-        return true
-    }
-    
     private var grid: [[Character]] = []
     
     private var selectedLetters: [(row: Int, col: Int)] = []
@@ -67,15 +30,12 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        setupGrid()
+        Task {
+            setupGrid()
+        }
     }
     
     private func setupGrid() {
-        // Add validation at the start of setupGrid
-        guard validateWords() else {
-            fatalError("Words cannot fit on the current grid size")
-        }
-        
         gridNode?.removeFromParent()
         gridNode = SKNode()
         letters = Array(repeating: Array(repeating: SKLabelNode(), count: gridWidth), count: gridHeight)
@@ -139,6 +99,14 @@ class GameScene: SKScene {
         background.alpha = 0.3
         background.position = CGPoint(x: 0, y: yPosition + bankHeight/2)
         addChild(background)
+        
+        // Add topic label
+        let topicLabel = SKLabelNode(fontNamed: "Arial")
+        topicLabel.text = "stuff lol"
+        topicLabel.fontSize = 36
+        topicLabel.fontColor = .white
+        topicLabel.position = CGPoint(x: 0, y: yPosition + bankHeight + 30)
+        addChild(topicLabel)
         
         // Place words
         for (index, word) in words.enumerated() {
@@ -408,15 +376,15 @@ class GameScene: SKScene {
             let path = CGMutablePath()
             
             let wordWidth = CGFloat(word.count) * (label.fontSize * 0.6)
-            let extensionLength: CGFloat = (label.fontSize * 0.10) + 6
-            let strikethroughY: CGFloat = 10
+            let extensionLength: CGFloat = label.fontSize * 0.2
+            let strikethroughY: CGFloat = -label.fontSize * 0.15
             
             path.move(to: CGPoint(x: -wordWidth/2 - extensionLength, y: strikethroughY))
             path.addLine(to: CGPoint(x: wordWidth/2 + extensionLength, y: strikethroughY))
             
             strikethrough.path = path
             strikethrough.strokeColor = .red
-            strikethrough.lineWidth = 4.0
+            strikethrough.lineWidth = 2.0
             
             // Add animation
             strikethrough.alpha = 0
@@ -442,30 +410,21 @@ class GameScene: SKScene {
         let startX = -gridWidth / 2
         let startY = -gridHeight / 2
         
-        // Calculate direction vector
+        // Calculate centered positions with extended length
         let direction = CGPoint(
             x: CGFloat(endPoint.col - startPoint.col),
             y: CGFloat(endPoint.row - startPoint.row)
         )
-        
-        // Calculate length and normalize direction
-        let length = sqrt(pow(direction.x, 2) + pow(direction.y, 2))
-        let normalizedDirection = CGPoint(
-            x: direction.x / length,
-            y: direction.y / length
-        )
-        
-        // Fixed 20-pixel padding
-        let padding: CGFloat = 20
+        let extensionLength: CGFloat = cellSize * 0.1 // Extend by 10% of cell size
         
         let start = CGPoint(
-            x: startX + CGFloat(startPoint.col) * cellSize + cellSize/2 - (normalizedDirection.x * padding),
-            y: startY + CGFloat(startPoint.row) * cellSize + cellSize/2 - (normalizedDirection.y * padding)
+            x: startX + CGFloat(startPoint.col) * cellSize + cellSize/2 - (direction.x * extensionLength),
+            y: startY + CGFloat(startPoint.row) * cellSize + cellSize/2 - (direction.y * extensionLength)
         )
         
         let end = CGPoint(
-            x: startX + CGFloat(endPoint.col) * cellSize + cellSize/2 + (normalizedDirection.x * padding),
-            y: startY + CGFloat(endPoint.row) * cellSize + cellSize/2 + (normalizedDirection.y * padding)
+            x: startX + CGFloat(endPoint.col) * cellSize + cellSize/2 + (direction.x * extensionLength),
+            y: startY + CGFloat(endPoint.row) * cellSize + cellSize/2 + (direction.y * extensionLength)
         )
         
         path.move(to: start)

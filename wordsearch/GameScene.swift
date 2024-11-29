@@ -208,6 +208,8 @@ class GameScene: SKScene {
             if !isPartOfFoundWord {
                 selectedLetters.append((row, col))
                 highlightCell(at: row, col)
+                letters[row][col].fontColor = .yellow
+                letters[row][col].setScale(1.2)
             }
         }
     }
@@ -370,10 +372,6 @@ class GameScene: SKScene {
             )
             
             gridNode?.addChild(highlight)
-            
-            // Make letter glow yellow and scale up
-            letters[row][col].fontColor = .yellow
-            letters[row][col].setScale(1.2)
         }
     }
     

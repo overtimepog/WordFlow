@@ -208,8 +208,12 @@ class GameScene: SKScene {
             if !isPartOfFoundWord {
                 selectedLetters.append((row, col))
                 highlightCell(at: row, col)
-                letters[row][col].fontColor = .yellow
-                letters[row][col].setScale(1.2)
+                
+                // Update all selected letters
+                for (selectedRow, selectedCol) in selectedLetters {
+                    letters[selectedRow][selectedCol].fontColor = .yellow
+                    letters[selectedRow][selectedCol].setScale(1.2)
+                }
             }
         }
     }

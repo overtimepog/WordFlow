@@ -180,16 +180,43 @@ class GameScene: SKScene {
     private func canPlaceWord(_ word: String, at position: (row: Int, col: Int), direction: (dx: Int, dy: Int)) -> Bool {
         let length = word.count
         
+        // Check each position the word would occupy
         for i in 0..<length {
             let newRow = position.row + (direction.dy * i)
             let newCol = position.col + (direction.dx * i)
             
+            // Check bounds
             if newRow < 0 || newRow >= gridHeight || newCol < 0 || newCol >= gridWidth {
                 return false
             }
             
-            if grid[newRow][newCol] != " " && grid[newRow][newCol] != Array(word)[i] {
+            // Check if cell is empty - no overlaps allowed at all
+            if grid[newRow][newCol] != " " {
                 return false
+            }
+            
+            // Check adjacent cells (to prevent words from being too close)
+            for dr in -1...1 {
+                for dc in -1...1 {
+                    let checkRow = newRow + dr
+                    let checkCol = newCol + dc
+                    
+                    // Skip the cells that are part of the word we're trying to place
+                    if dr == direction.dy && dc == direction.dx {
+                        continue
+                    }
+                    if dr == -direction.dy && dc == -direction.dx {
+                        continue
+                    }
+                    
+                    // Check if adjacent cell is within bounds
+                    if checkRow >= 0 && checkRow < gridHeight && checkCol >= 0 && checkCol < gridWidth {
+                        // If adjacent cell has any letter, prevent placement
+                        if grid[checkRow][checkCol] != " " {
+                            return false
+                        }
+                    }
+                }
             }
         }
         
@@ -225,18 +252,16 @@ class GameScene: SKScene {
         selectedLetters.removeAll()
         
         if let (row, col) = convertPointToGrid(location) {
-            // Check if the touched letter is part of any found word
+            // More thorough check for found words
             let isPartOfFoundWord = foundWords.contains { word in
                 let wordPositions = getPositionsForWord(word)
                 return wordPositions.contains { $0 == (row, col) }
             }
             
-            // Only allow selection if the letter is not part of a found word
+            // Only allow selection if the letter is not part of ANY found word
             if !isPartOfFoundWord {
                 selectedLetters.append((row, col))
                 highlightCell(at: row, col)
-                letters[row][col].fontColor = .yellow
-                letters[row][col].setScale(1.2)
             }
         }
     }
@@ -373,13 +398,13 @@ class GameScene: SKScene {
     }
     
     private func highlightCell(at row: Int, _ col: Int) {
-        // Check if the cell is part of a found word
+        // More thorough check for found words
         let isPartOfFoundWord = foundWords.contains { word in
             let wordPositions = getPositionsForWord(word)
             return wordPositions.contains { $0 == (row, col) }
         }
         
-        // Only highlight if the cell is not part of a found word
+        // Only highlight if the cell is not part of ANY found word
         if !isPartOfFoundWord {
             // Highlight background
             let highlight = SKShapeNode(rectOf: CGSize(width: cellSize, height: cellSize))
@@ -396,6 +421,10 @@ class GameScene: SKScene {
             )
             
             gridNode?.addChild(highlight)
+            
+            // Only change color if not part of a found word
+            letters[row][col].fontColor = .yellow
+            letters[row][col].setScale(1.2)
         }
     }
     
@@ -496,9 +525,19 @@ class GameScene: SKScene {
         
         gridNode?.addChild(line)
         
-        // Change color of found word letters
+        // Ensure letters stay gray
         for (row, col) in selectedLetters {
             letters[row][col].fontColor = .gray
+            letters[row][col].setScale(1.0) // Reset scale
+        }
+        
+        // Force update the found word positions
+        let word = getSelectedWord()
+        if let positions = foundWords.contains(word) ? getPositionsForWord(word) : nil {
+            for position in positions {
+                letters[position.row][position.col].fontColor = .gray
+                letters[position.row][position.col].setScale(1.0)
+            }
         }
     }
     

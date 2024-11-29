@@ -258,7 +258,7 @@ class GameScene: SKScene {
                             letters[r][c].setScale(1.0)
                         } else {
                             // Handle non-found word letters
-                            if r == firstPosition.row && c == firstPosition.col {
+                            if selectedLetters.contains(where: { $0 == (r, c) }) {
                                 letters[r][c].fontColor = .yellow
                                 letters[r][c].setScale(1.2)
                             } else {

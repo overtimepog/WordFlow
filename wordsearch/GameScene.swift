@@ -372,7 +372,13 @@ class GameScene: SKScene {
     private func clearSelection() {
         // Reset letter appearances and scale
         for (row, col) in selectedLetters {
-            if !foundWords.contains(getSelectedWord()) {
+            // Check if this position is part of any found word
+            let isPartOfFoundWord = foundWords.contains { word in
+                let wordPositions = getPositionsForWord(word)
+                return wordPositions.contains { $0 == (row, col) }
+            }
+            
+            if !isPartOfFoundWord {
                 letters[row][col].fontColor = .white
                 letters[row][col].setScale(1.0)
             }

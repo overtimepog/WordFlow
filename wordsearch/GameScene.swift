@@ -297,8 +297,34 @@ class GameScene: SKScene {
             foundWords.insert(word)
             crossOutFromWordBank(word)
             crossOutWordInGrid()
+            
+            // Check if all words are found
+            if foundWords.count == words.count {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    self?.resetGame()
+                }
+            }
         }
         clearSelection()
+    }
+    
+    private func resetGame() {
+        // Clear the found words set
+        foundWords.removeAll()
+        
+        // Remove all nodes from gridNode
+        gridNode?.removeAllChildren()
+        
+        // Remove word bank labels
+        wordBankLabels.values.forEach { $0.removeFromParent() }
+        wordBankLabels.removeAll()
+        
+        // Reset the grid and letters arrays
+        grid.removeAll()
+        letters.removeAll()
+        
+        // Setup the grid again
+        setupGrid()
     }
     
     private func convertPointToGrid(_ point: CGPoint) -> (row: Int, col: Int)? {

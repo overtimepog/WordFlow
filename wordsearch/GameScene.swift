@@ -273,17 +273,29 @@ class GameScene: SKScene {
             return wordPositions.contains { $0 == (row, col) }
         }
         
-        // If this position is part of multiple words
-        if wordsContainingPosition.count > 1 {
-            // Allow interaction if at least one of the words is not found
-            return wordsContainingPosition.allSatisfy { foundWords.contains($0) }
-        }
-        
-        // For single-word positions, block if the word is found
-        return foundWords.contains { word in
+        // Check if this position is part of any found word
+        let isPartOfFoundWord = foundWords.contains { word in
             let wordPositions = getPositionsForWord(word)
             return wordPositions.contains { $0 == (row, col) }
         }
+        
+        if isPartOfFoundWord {
+            // If it's part of a found word, ensure the letter stays grey
+            letters[row][col].fontColor = .gray
+            return true
+        }
+        
+        // If this position is part of multiple words
+        if wordsContainingPosition.count > 1 {
+            // Allow interaction if at least one of the words is not found
+            let allFound = wordsContainingPosition.allSatisfy { foundWords.contains($0) }
+            if allFound {
+                letters[row][col].fontColor = .gray
+            }
+            return allFound
+        }
+        
+        return false
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {

@@ -267,34 +267,16 @@ class GameScene: SKScene {
     }
     
     private func isPositionPartOfFoundWord(row: Int, col: Int) -> Bool {
-        // Get all words (found and not found) that contain this position
-        let wordsContainingPosition = words.filter { word in
-            let wordPositions = getPositionsForWord(word)
-            return wordPositions.contains { $0 == (row, col) }
-        }
-        
         // Check if this position is part of any found word
-        let isPartOfFoundWord = foundWords.contains { word in
+        for word in foundWords {
             let wordPositions = getPositionsForWord(word)
-            return wordPositions.contains { $0 == (row, col) }
-        }
-        
-        if isPartOfFoundWord {
-            // If it's part of a found word, ensure the letter stays grey
-            letters[row][col].fontColor = .gray
-            return true
-        }
-        
-        // If this position is part of multiple words
-        if wordsContainingPosition.count > 1 {
-            // Allow interaction if at least one of the words is not found
-            let allFound = wordsContainingPosition.allSatisfy { foundWords.contains($0) }
-            if allFound {
+            if wordPositions.contains(where: { $0 == (row, col) }) {
+                // Ensure the letter stays grey
                 letters[row][col].fontColor = .gray
+                letters[row][col].setScale(1.0)
+                return true
             }
-            return allFound
         }
-        
         return false
     }
     
@@ -523,6 +505,11 @@ class GameScene: SKScene {
         let startPoint = selectedLetters.first!
         let endPoint = selectedLetters.last!
         
+        // First, get all positions for the found word to ensure we mark all letters
+        let word = getSelectedWord()
+        let allWordPositions = getPositionsForWord(word)
+        
+        // Create the crossout line
         let line = SKShapeNode()
         let path = CGMutablePath()
         
@@ -536,7 +523,7 @@ class GameScene: SKScene {
             x: CGFloat(endPoint.col - startPoint.col),
             y: CGFloat(endPoint.row - startPoint.row)
         )
-        let extensionLength: CGFloat = cellSize * 0.1 // Extend by 10% of cell size
+        let extensionLength: CGFloat = cellSize * 0.1
         
         let start = CGPoint(
             x: startX + CGFloat(startPoint.col) * cellSize + cellSize/2 - (direction.x * extensionLength),
@@ -553,26 +540,14 @@ class GameScene: SKScene {
         line.path = path
         line.strokeColor = .red
         line.lineWidth = 3.0
-        
-        // Add glow effect to the line
         line.glowWidth = 2.0
-        line.strokeColor = .red
         
         gridNode?.addChild(line)
         
-        // Ensure letters stay gray
-        for (row, col) in selectedLetters {
-            letters[row][col].fontColor = .gray
-            letters[row][col].setScale(1.0) // Reset scale
-        }
-        
-        // Force update the found word positions
-        let word = getSelectedWord()
-        if let positions = foundWords.contains(word) ? getPositionsForWord(word) : nil {
-            for position in positions {
-                letters[position.row][position.col].fontColor = .gray
-                letters[position.row][position.col].setScale(1.0)
-            }
+        // Mark ALL positions of the word as gray, not just the selected letters
+        for position in allWordPositions {
+            letters[position.row][position.col].fontColor = .gray
+            letters[position.row][position.col].setScale(1.0)
         }
     }
     

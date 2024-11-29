@@ -243,15 +243,21 @@ class GameScene: SKScene {
                     }
                 }
                 
-                // Reset only non-found word letters
+                // Reset letter appearances
                 for r in 0..<gridHeight {
                     for c in 0..<gridWidth {
+                        // First check if it's part of any found word
                         let isPartOfFoundWord = foundWords.contains { word in
                             let wordPositions = getPositionsForWord(word)
                             return wordPositions.contains { $0 == (r, c) }
                         }
                         
-                        if !isPartOfFoundWord {
+                        if isPartOfFoundWord {
+                            // Always keep found word letters gray
+                            letters[r][c].fontColor = .gray
+                            letters[r][c].setScale(1.0)
+                        } else {
+                            // Handle non-found word letters
                             if r == firstPosition.row && c == firstPosition.col {
                                 letters[r][c].fontColor = .yellow
                                 letters[r][c].setScale(1.2)
@@ -259,10 +265,6 @@ class GameScene: SKScene {
                                 letters[r][c].fontColor = .white
                                 letters[r][c].setScale(1.0)
                             }
-                        } else {
-                            // Keep found words gray
-                            letters[r][c].fontColor = .gray
-                            letters[r][c].setScale(1.0)
                         }
                     }
                 }

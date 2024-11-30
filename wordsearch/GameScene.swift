@@ -539,6 +539,8 @@ class GameScene: SKScene {
     private func updateLetterAppearance(row: Int, col: Int) {
         let isFound = isPositionPartOfFoundWord(row: row, col: col)
         let isSelected = selectedLetters.contains(where: { $0 == (row, col) })
+        let currentWord = getSelectedWord()
+        let isCurrentSelectionFound = foundWords.contains(currentWord)
         
         // Debug information
         if isFound {
@@ -547,9 +549,12 @@ class GameScene: SKScene {
         if isSelected {
             print("Letter at [\(row),\(col)] is currently selected")
         }
+        if isCurrentSelectionFound {
+            print("Current selection '\(currentWord)' is already found")
+        }
         
         // Found words take precedence over selection
-        if isFound {
+        if isFound || isCurrentSelectionFound {
             letters[row][col].fontColor = .gray
             letters[row][col].setScale(1.0)
             
@@ -559,7 +564,7 @@ class GameScene: SKScene {
                     print("Letter at [\(row),\(col)] belongs to found word: \(word)")
                 }
             }
-        } else if isSelected && !isFound {  // Only allow selection if not part of found word
+        } else if isSelected {  // Only allow selection if not part of found word
             letters[row][col].fontColor = .yellow
             letters[row][col].setScale(1.2)
         } else {

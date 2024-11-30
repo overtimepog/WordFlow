@@ -541,6 +541,7 @@ class GameScene: SKScene {
         let isSelected = selectedLetters.contains(where: { $0 == (row, col) })
         let currentWord = getSelectedWord()
         let isCurrentSelectionFound = foundWords.contains(currentWord)
+        let isPartOfCurrentSelection = selectedLetters.contains(where: { $0 == (row, col) })
         
         // Debug information
         if isFound {
@@ -554,7 +555,7 @@ class GameScene: SKScene {
         }
         
         // Found words take precedence over selection
-        if isFound || isCurrentSelectionFound {
+        if isFound {
             letters[row][col].fontColor = .gray
             letters[row][col].setScale(1.0)
             
@@ -564,9 +565,12 @@ class GameScene: SKScene {
                     print("Letter at [\(row),\(col)] belongs to found word: \(word)")
                 }
             }
-        } else if isSelected {  // Only allow selection if not part of found word
+        } else if isSelected && !isCurrentSelectionFound {
             letters[row][col].fontColor = .yellow
             letters[row][col].setScale(1.2)
+        } else if isPartOfCurrentSelection && isCurrentSelectionFound {
+            letters[row][col].fontColor = .gray
+            letters[row][col].setScale(1.0)
         } else {
             letters[row][col].fontColor = .white
             letters[row][col].setScale(1.0)

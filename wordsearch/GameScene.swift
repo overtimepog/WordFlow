@@ -252,7 +252,9 @@ class GameScene: SKScene {
         guard let touch = touches.first else { return }
         let location = touch.location(in: gridNode ?? self)
         touchStartPosition = location
-        selectedLetters.removeAll()
+        
+        // Clear any existing selection first
+        clearSelection()
         
         if let (row, col) = convertPointToGrid(location) {
             // Check if this position is part of any found word
@@ -351,6 +353,13 @@ class GameScene: SKScene {
             crossOutFromWordBank(word)
             crossOutWordInGrid()
             
+            // Update all letters in the grid to ensure proper appearance
+            for row in 0..<gridHeight {
+                for col in 0..<gridWidth {
+                    updateLetterAppearance(row: row, col: col)
+                }
+            }
+            
             // Check if all words are found
             if foundWords.count == words.count {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
@@ -420,9 +429,11 @@ class GameScene: SKScene {
     }
     
     private func clearSelection() {
-        // Update appearance for all previously selected letters
-        for (row, col) in selectedLetters {
-            updateLetterAppearance(row: row, col: col)
+        // Update appearance for all letters in the grid
+        for row in 0..<gridHeight {
+            for col in 0..<gridWidth {
+                updateLetterAppearance(row: row, col: col)
+            }
         }
         
         selectedLetters.removeAll()

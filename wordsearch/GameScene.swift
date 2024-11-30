@@ -257,13 +257,11 @@ class GameScene: SKScene {
         clearSelection()
         
         if let (row, col) = convertPointToGrid(location) {
-            // Check if this position is part of any found word
-            let isPartOfFoundWord = isPositionPartOfFoundWord(row: row, col: col)
-            
-            // Only allow selection if the letter is not part of ANY found word
-            if !isPartOfFoundWord {
+            // Only proceed if this position is not part of a found word
+            if !isPositionPartOfFoundWord(row: row, col: col) {
                 selectedLetters.append((row, col))
-                highlightCell(at: row, col)
+                letters[row][col].fontColor = .yellow
+                letters[row][col].setScale(1.2)
             }
         }
     }
@@ -282,8 +280,7 @@ class GameScene: SKScene {
         let location = touch.location(in: gridNode ?? self)
         
         if let (row, col) = convertPointToGrid(location),
-           let (startRow, startCol) = selectedLetters.first,
-           !isPositionPartOfFoundWord(row: row, col: col) {
+           let (startRow, startCol) = selectedLetters.first {
             // Calculate direction
             let rowDiff = row - startRow
             let colDiff = col - startCol
@@ -293,53 +290,36 @@ class GameScene: SKScene {
             let isDiagonal = abs(rowDiff) == abs(colDiff)
             
             if isHorizontal || isVertical || isDiagonal {
-                let firstPosition = selectedLetters[0]
+                // Clear previous selection except first letter
                 selectedLetters = [selectedLetters[0]]
-                
-                // Clear previous selection highlights
-                gridNode?.children.forEach { node in
-                    if let shapeNode = node as? SKShapeNode, shapeNode.fillColor == SKColor.blue {
-                        if let (nodeRow, nodeCol) = convertPointToGrid(node.position),
-                           nodeRow == firstPosition.row && nodeCol == firstPosition.col {
-                            return
-                        }
-                        node.removeFromParent()
-                    }
-                }
-                
-                // Update appearance of all letters
-                for r in 0..<gridHeight {
-                    for c in 0..<gridWidth {
-                        updateLetterAppearance(row: r, col: c)
-                    }
-                }
                 
                 let steps = max(abs(rowDiff), abs(colDiff))
                 if steps > 0 {
                     let rowStep = rowDiff / steps
                     let colStep = colDiff / steps
                     
+                    // Reset all non-found letters to white
+                    for r in 0..<gridHeight {
+                        for c in 0..<gridWidth {
+                            if !isPositionPartOfFoundWord(row: r, col: c) {
+                                letters[r][c].fontColor = .white
+                                letters[r][c].setScale(1.0)
+                            }
+                        }
+                    }
+                    
+                    // Add new selections
                     for i in 0...steps {
                         let newRow = startRow + (rowStep * i)
                         let newCol = startCol + (colStep * i)
-                        if newRow >= 0 && newRow < gridHeight && newCol >= 0 && newCol < gridWidth {
-                            // Check if new position is part of a found word
-                            let isPartOfFoundWord = foundWords.contains { word in
-                                let wordPositions = getPositionsForWord(word)
-                                return wordPositions.contains { $0 == (newRow, newCol) }
-                            }
-                            
-                            if !isPartOfFoundWord {
-                                let position = (newRow, newCol)
-                                if !selectedLetters.contains(where: { $0 == position }) {
-                                    print("Adding new selection at [\(newRow),\(newCol)]")
-                                    selectedLetters.append(position)
-                                    highlightCell(at: newRow, newCol)
-                                    // Remove direct color setting here - let updateLetterAppearance handle it
-                                    updateLetterAppearance(row: newRow, col: newCol)
-                                }
-                            } else {
-                                print("Skipping selection at [\(newRow),\(newCol)] - part of found word")
+                        if newRow >= 0 && newRow < gridHeight && 
+                           newCol >= 0 && newCol < gridWidth &&
+                           !isPositionPartOfFoundWord(row: newRow, col: newCol) {
+                            let position = (newRow, newCol)
+                            if !selectedLetters.contains(where: { $0 == position }) {
+                                selectedLetters.append(position)
+                                letters[newRow][newCol].fontColor = .yellow
+                                letters[newRow][newCol].setScale(1.2)
                             }
                         }
                     }

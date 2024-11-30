@@ -267,17 +267,10 @@ class GameScene: SKScene {
     }
     
     private func isPositionPartOfFoundWord(row: Int, col: Int) -> Bool {
-        // Check if this position is part of any found word
-        for word in foundWords {
+        return foundWords.contains { word in
             let wordPositions = getPositionsForWord(word)
-            if wordPositions.contains(where: { $0 == (row, col) }) {
-                // Ensure the letter stays grey
-                letters[row][col].fontColor = .gray
-                letters[row][col].setScale(1.0)
-                return true
-            }
+            return wordPositions.contains { $0 == (row, col) }
         }
-        return false
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -312,19 +305,10 @@ class GameScene: SKScene {
                     }
                 }
                 
-                // Reset all letters to default state first, except the first selected letter
+                // Update appearance of all letters
                 for r in 0..<gridHeight {
                     for c in 0..<gridWidth {
-                        if !foundWords.contains(where: { word in
-                            let wordPositions = getPositionsForWord(word)
-                            return wordPositions.contains { $0 == (r, c) }
-                        }) {
-                            // Don't reset the first selected letter
-                            if !(r == selectedLetters[0].row && c == selectedLetters[0].col) {
-                                letters[r][c].fontColor = .white
-                                letters[r][c].setScale(1.0)
-                            }
-                        }
+                        updateLetterAppearance(row: r, col: c)
                     }
                 }
                 
@@ -415,52 +399,35 @@ class GameScene: SKScene {
     }
     
     private func highlightCell(at row: Int, _ col: Int) {
-        // More thorough check for found words
-        let isPartOfFoundWord = foundWords.contains { word in
-            let wordPositions = getPositionsForWord(word)
-            return wordPositions.contains { $0 == (row, col) }
-        }
+        guard !isPositionPartOfFoundWord(row: row, col: col) else { return }
         
-        // Only highlight if the cell is not part of ANY found word
-        if !isPartOfFoundWord {
-            // Highlight background
-            let highlight = SKShapeNode(rectOf: CGSize(width: cellSize, height: cellSize))
-            highlight.fillColor = .blue
-            highlight.alpha = 0.3
-            
-            // Calculate grid position
-            let startX = -CGFloat(gridWidth) * cellSize / 2
-            let startY = -CGFloat(gridHeight) * cellSize / 2
-            
-            highlight.position = CGPoint(
-                x: startX + CGFloat(col) * cellSize + cellSize / 2,
-                y: startY + CGFloat(row) * cellSize + cellSize / 2
-            )
-            
-            gridNode?.addChild(highlight)
-            
-            // Only change color if not part of a found word
-            letters[row][col].fontColor = .yellow
-            letters[row][col].setScale(1.2)
-        }
+        // Highlight background
+        let highlight = SKShapeNode(rectOf: CGSize(width: cellSize, height: cellSize))
+        highlight.fillColor = .blue
+        highlight.alpha = 0.3
+        
+        // Calculate grid position
+        let startX = -CGFloat(gridWidth) * cellSize / 2
+        let startY = -CGFloat(gridHeight) * cellSize / 2
+        
+        highlight.position = CGPoint(
+            x: startX + CGFloat(col) * cellSize + cellSize / 2,
+            y: startY + CGFloat(row) * cellSize + cellSize / 2
+        )
+        
+        gridNode?.addChild(highlight)
+        updateLetterAppearance(row: row, col: col)
     }
     
     private func clearSelection() {
-        // Reset letter appearances and scale
+        // Update appearance for all previously selected letters
         for (row, col) in selectedLetters {
-            // Check if this position is part of any found word
-            let isPartOfFoundWord = foundWords.contains { word in
-                let wordPositions = getPositionsForWord(word)
-                return wordPositions.contains { $0 == (row, col) }
-            }
-            
-            if !isPartOfFoundWord {
-                letters[row][col].fontColor = .white
-                letters[row][col].setScale(1.0)
-            }
+            updateLetterAppearance(row: row, col: col)
         }
         
         selectedLetters.removeAll()
+        
+        // Remove highlight backgrounds
         gridNode?.children.forEach { node in
             if let shapeNode = node as? SKShapeNode, shapeNode.fillColor == SKColor.blue {
                 node.removeFromParent()
@@ -553,6 +520,19 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
+    }
+    
+    private func updateLetterAppearance(row: Int, col: Int) {
+        if isPositionPartOfFoundWord(row: row, col: col) {
+            letters[row][col].fontColor = .gray
+            letters[row][col].setScale(1.0)
+        } else if selectedLetters.contains(where: { $0 == (row, col) }) {
+            letters[row][col].fontColor = .yellow
+            letters[row][col].setScale(1.2)
+        } else {
+            letters[row][col].fontColor = .white
+            letters[row][col].setScale(1.0)
+        }
     }
     
     // Add this helper function to get positions for a word

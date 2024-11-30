@@ -350,6 +350,14 @@ class GameScene: SKScene {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         let word = getSelectedWord()
+        
+        // First clear any yellow highlights
+        for (row, col) in selectedLetters {
+            letters[row][col].fontColor = .white
+            letters[row][col].setScale(1.0)
+        }
+        
+        // Then check if word is valid and not already found
         if words.contains(word) && !foundWords.contains(word) {
             print("Found word: \(word)")
             foundWords.insert(word)
@@ -369,7 +377,21 @@ class GameScene: SKScene {
                     self?.resetGame()
                 }
             }
+        } else {
+            // If word is not valid or already found, ensure grid is properly updated
+            for row in 0..<gridHeight {
+                for col in 0..<gridWidth {
+                    if isPositionPartOfFoundWord(row: row, col: col) {
+                        letters[row][col].fontColor = .gray
+                    } else {
+                        letters[row][col].fontColor = .white
+                        letters[row][col].setScale(1.0)
+                    }
+                }
+            }
         }
+        
+        // Clear selection at the end
         clearSelection()
     }
     

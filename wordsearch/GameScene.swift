@@ -332,11 +332,14 @@ class GameScene: SKScene {
                             if !isPartOfFoundWord {
                                 let position = (newRow, newCol)
                                 if !selectedLetters.contains(where: { $0 == position }) {
+                                    print("Adding new selection at [\(newRow),\(newCol)]")
                                     selectedLetters.append(position)
                                     highlightCell(at: newRow, newCol)
-                                    letters[newRow][newCol].fontColor = .yellow
-                                    letters[newRow][newCol].setScale(1.2)
+                                    // Remove direct color setting here - let updateLetterAppearance handle it
+                                    updateLetterAppearance(row: newRow, col: newCol)
                                 }
+                            } else {
+                                print("Skipping selection at [\(newRow),\(newCol)] - part of found word")
                             }
                         }
                     }
@@ -534,10 +537,29 @@ class GameScene: SKScene {
     }
     
     private func updateLetterAppearance(row: Int, col: Int) {
-        if isPositionPartOfFoundWord(row: row, col: col) {
+        let isFound = isPositionPartOfFoundWord(row: row, col: col)
+        let isSelected = selectedLetters.contains(where: { $0 == (row, col) })
+        
+        // Debug information
+        if isFound {
+            print("Letter at [\(row),\(col)] is part of found word")
+        }
+        if isSelected {
+            print("Letter at [\(row),\(col)] is currently selected")
+        }
+        
+        // Found words take precedence over selection
+        if isFound {
             letters[row][col].fontColor = .gray
             letters[row][col].setScale(1.0)
-        } else if selectedLetters.contains(where: { $0 == (row, col) }) {
+            
+            // Additional debug check for found words
+            for word in foundWords {
+                if getPositionsForWord(word).contains(where: { $0 == (row, col) }) {
+                    print("Letter at [\(row),\(col)] belongs to found word: \(word)")
+                }
+            }
+        } else if isSelected && !isFound {  // Only allow selection if not part of found word
             letters[row][col].fontColor = .yellow
             letters[row][col].setScale(1.2)
         } else {

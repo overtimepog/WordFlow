@@ -70,9 +70,10 @@ class GameScene: SKScene {
         static let scaleNormal: CGFloat = 1.0
         static let wordBankPadding: CGFloat = 20
         static let wordHeight: CGFloat = 40
-        static let wordSpacing: CGFloat = 120
+        static let wordSpacing: CGFloat = 20
         static let wordsPerRow = 3
         static let letterColorNormal: UIColor = .white
+        static let maxRowWidth: CGFloat = 400
     }
     
     override func didMove(to view: SKView) {
@@ -113,8 +114,9 @@ class GameScene: SKScene {
         
         let startX = -gridWidth / 2
         let startY = -gridHeight / 2
+        let wordbankY = startY + gridHeight + 78
         
-        createWordBank(above: startY + gridHeight + 100)
+        createWordBank(above: wordbankY)
         placeWords()
         
         for row in 0..<self.gridHeight {
@@ -152,23 +154,56 @@ class GameScene: SKScene {
         wordBankLabels.values.forEach { $0.removeFromParent() }
         wordBankLabels.removeAll()
         
-        // Create background for word bank
+        // Create constants for layout
         let padding = Constants.wordBankPadding
         let wordHeight = Constants.wordHeight
-        let wordsPerRow = Constants.wordsPerRow
-        let wordSpacing = Constants.wordSpacing
+        let maxRowWidth = Constants.maxRowWidth
+        let maxWordsPerRow = 3 // Max words allowed per row unless wrapping is needed
         
-        // Calculate rows needed
-        let numRows = Int(ceil(Float(words.count) / Float(wordsPerRow)))
+        // Prepare rows
+        var currentRowWords: [SKLabelNode] = []
+        var allRows: [[SKLabelNode]] = []
+        var currentRowWidth: CGFloat = 0
         
-        // Create background
-        let bankWidth = CGFloat(wordsPerRow) * wordSpacing
-        let bankHeight = CGFloat(numRows) * wordHeight + padding * 2
+        // Process each word for wrapping
+        for word in words {
+            // Create a label to calculate its size
+            let wordLabel = SKLabelNode(fontNamed: "Arial")
+            wordLabel.text = word
+            wordLabel.fontSize = 30
+            wordLabel.fontColor = .white
+            wordLabel.horizontalAlignmentMode = .center
+            wordLabel.verticalAlignmentMode = .center
+            
+            // Calculate the actual width of the word
+            let wordWidth = wordLabel.frame.size.width
+            
+            // Check if the word should wrap (exceeds max width OR max words per row)
+            if (currentRowWords.count == maxWordsPerRow || currentRowWidth + wordWidth + CGFloat(currentRowWords.count) * Constants.wordSpacing > maxRowWidth) && !currentRowWords.isEmpty {
+                // Add the current row to rows
+                allRows.append(currentRowWords)
+                currentRowWords = []
+                currentRowWidth = 0
+            }
+            
+            // Add the word to the current row
+            currentRowWords.append(wordLabel)
+            currentRowWidth += wordWidth
+        }
+        
+        // Add the final row if there are leftover words
+        if !currentRowWords.isEmpty {
+            allRows.append(currentRowWords)
+        }
+        
+        // Calculate bank dimensions
+        let bankWidth = maxRowWidth
+        let bankHeight = CGFloat(allRows.count) * wordHeight + padding * 2
         let background = SKShapeNode(rectOf: CGSize(width: bankWidth, height: bankHeight + 50))
         background.fillColor = .darkGray
         background.strokeColor = .white
         background.alpha = 0.3
-        background.position = CGPoint(x: 0, y: yPosition + bankHeight/2)
+        background.position = CGPoint(x: 0, y: yPosition + bankHeight / 2)
         addChild(background)
         
         // Add topic label
@@ -179,24 +214,29 @@ class GameScene: SKScene {
         topicLabel.position = CGPoint(x: 0, y: yPosition + bankHeight + 30)
         addChild(topicLabel)
         
-        // Place words
-        for (index, word) in words.enumerated() {
-            let row = index / wordsPerRow
-            let col = index % wordsPerRow
+        // Place words in their rows
+        for (rowIndex, rowWords) in allRows.enumerated() {
+            // Calculate total row width
+            let totalRowWidth = rowWords.reduce(0) { $0 + $1.frame.size.width } + CGFloat(rowWords.count - 1) * Constants.wordSpacing
             
-            let wordLabel = SKLabelNode(fontNamed: "Arial")
-            wordLabel.text = word
-            wordLabel.fontSize = 30
-            wordLabel.fontColor = .white
+            // Center the row by adjusting the starting X position
+            var currentX = -totalRowWidth / 2
+            let rowY = yPosition + bankHeight - padding - CGFloat(rowIndex) * wordHeight
             
-            // Calculate position with dynamic spacing
-            //let wordWidth = CGFloat(word.count) * wordLabel.fontSize * 0.6
-            let x = -bankWidth/2 + wordSpacing * CGFloat(col) + wordSpacing/2
-            let y = yPosition + bankHeight - padding - CGFloat(row) * wordHeight
-            
-            wordLabel.position = CGPoint(x: x, y: y)
-            addChild(wordLabel)
-            wordBankLabels[word] = wordLabel
+            for wordLabel in rowWords {
+                // Set the position of the word label
+                let wordWidth = wordLabel.frame.size.width
+                wordLabel.position = CGPoint(x: currentX + wordWidth / 2, y: rowY)
+                addChild(wordLabel)
+                
+                // Update word bank dictionary
+                if let word = wordLabel.text {
+                    wordBankLabels[word] = wordLabel
+                }
+                
+                // Move to the next position
+                currentX += wordWidth + Constants.wordSpacing
+            }
         }
     }
     
@@ -377,6 +417,7 @@ class GameScene: SKScene {
 
             // Check if all words are found
             if foundWords.count == words.count {
+                print("All words found :)")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
                     self?.resetGame()
                 }
@@ -480,14 +521,16 @@ class GameScene: SKScene {
             
             let wordWidth = CGFloat(word.count) * (label.fontSize * 0.6)
             let extensionLength: CGFloat = label.fontSize * 0.2
-            let strikethroughY: CGFloat = -label.fontSize * 0.15
+            
+            //move this up a bit on the y axis
+            let strikethroughY: CGFloat = -label.fontSize * 0.10
             
             path.move(to: CGPoint(x: -wordWidth/2 - extensionLength, y: strikethroughY))
             path.addLine(to: CGPoint(x: wordWidth/2 + extensionLength, y: strikethroughY))
             
             strikethrough.path = path
             strikethrough.strokeColor = .red
-            strikethrough.lineWidth = 2.0
+            strikethrough.lineWidth = 5.0
             
             // Add animation
             strikethrough.alpha = 0

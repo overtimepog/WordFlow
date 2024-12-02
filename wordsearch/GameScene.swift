@@ -364,14 +364,17 @@ class GameScene: SKScene {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         let word = getSelectedWord().uppercased() // Ensure uppercase for matching
-        
+
         if words.contains(word) && !foundWords.contains(word) {
             // Word found - process it
             print("Found word: \(word)")
             foundWords.insert(word) // Mark word as found
             crossOutFromWordBank(word)
             crossOutWordInGrid() // Mark word on the grid
-            
+
+            // Clear selection to avoid lingering selections
+            clearSelection()
+
             // Check if all words are found
             if foundWords.count == words.count {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
@@ -381,8 +384,7 @@ class GameScene: SKScene {
         } else {
             // Invalid or duplicate word selection
             print("Invalid or duplicate word selection: \(word)")
-            // Clear any invalid selection
-            clearSelection()
+            clearSelection() // Clear any invalid selection
         }
     }
     
@@ -461,10 +463,12 @@ class GameScene: SKScene {
             }
         }
         
+        // Clear the selection
         selectedLetters.removeAll()
     }
     
     private func getSelectedWord() -> String {
+        guard !selectedLetters.isEmpty else { return "" } // Handle empty selection case
         return selectedLetters.map { grid[$0.row][$0.col] }.map(String.init).joined()
     }
     

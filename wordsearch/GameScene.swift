@@ -19,20 +19,8 @@ class GameScene: SKScene {
     
     private var letters: [[SKLabelNode]] = []
     private let wordList = [
-        "SWIFT", "CODE", "GAME", "FUN", "APP", "RUN",
-        "PLAY", "WIN", "LOOP", "DATA", "TEST", "BUG",
-        "BYTE", "FILE", "SORT", "LIST", "MAP", "SET",
-        "VIEW", "DRAW", "TAP", "DRAG", "DROP", "SYNC",
-        "LOAD", "SAVE", "EDIT", "UNDO", "COPY", "LINK",
-        "NODE", "PATH", "GRID", "CELL", "FONT", "TEXT",
-        "LINE", "RECT", "SIZE", "MOVE", "FADE", "SPIN",
-        "ZOOM", "CLIP", "MASK", "BLUR", "FILL", "TIME",
-        "ARRAY", "CLASS", "DEBUG", "ERROR", "FLOAT", "GUARD",
-        "HASH", "INPUT", "JSON", "KEYS", "LABEL", "MODAL",
-        "NULL", "OBJECT", "PRINT", "QUERY", "RANGE", "STACK",
-        "TUPLE", "URL", "VALUE", "WHILE", "XCODE", "YIELD",
-        "ASYNC", "BREAK", "CATCH", "DEFER", "ENUM", "FINAL",
-        "FRAME", "GROUP", "HTTPS", "INDEX", "JOIN", "KEYBOARD"
+        //words that would be good for an app icon
+        "APP", "FUN", "GAME", "CODE", "SEARCH", "PLAY",
     ]
     private var words: [String] = []
     private var grid: [[Character]] = []
@@ -75,6 +63,8 @@ class GameScene: SKScene {
         static let letterColorNormal: UIColor = .white
         static let maxRowWidth: CGFloat = 400
     }
+    
+    private var currentTopic: String = ""
     
     override func didMove(to view: SKView) {
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
@@ -208,7 +198,7 @@ class GameScene: SKScene {
         
         // Add topic label
         let topicLabel = SKLabelNode(fontNamed: "Arial")
-        topicLabel.text = "stuff lol"
+        topicLabel.text = currentTopic
         topicLabel.fontSize = 36
         topicLabel.fontColor = .white
         topicLabel.position = CGPoint(x: 0, y: yPosition + bankHeight + 30)
